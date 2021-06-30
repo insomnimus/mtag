@@ -1,3 +1,9 @@
+use mtag::cmd;
+use std::process;
+
 fn main() {
-	println!("Hello, world!");
+    if let Some(e) = cmd::run() {
+        eprintln!("error: {}", &e);
+        process::exit(1);
+    }
 }
