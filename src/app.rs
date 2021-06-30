@@ -1,5 +1,5 @@
 use clap::{
-    crate_version, App, AppSettings, Arg,
+    crate_version, App, AppSettings, Arg, ArgGroup,
     ArgSettings::{AllowEmptyValues, IgnoreCase, UseValueDelimiter},
 };
 
@@ -49,9 +49,7 @@ fn app_set() -> App<'static> {
         .takes_value(true)
         .setting(UseValueDelimiter)
         .setting(AllowEmptyValues)
-        .about("comma separated list of artists to set")
-        .group("md")
-        .required_unless_present("md");
+        .about("comma separated list of artists to set");
 
     let title = Arg::new("title")
         .long("title")
@@ -60,18 +58,14 @@ fn app_set() -> App<'static> {
         .visible_alias("ttl")
         .takes_value(true)
         .setting(AllowEmptyValues)
-        .about("set the title metadata")
-        .group("md")
-        .required_unless_present("md");
+        .about("set the title metadata");
 
     let album = Arg::new("album")
         .long("album")
         .visible_alias("alb")
         .takes_value(true)
         .setting(AllowEmptyValues)
-        .about("set the album metadata")
-        .group("md")
-        .required_unless_present("md");
+        .about("set the album metadata");
 
     let genre = Arg::new("genre")
         .long("genre")
@@ -80,16 +74,12 @@ fn app_set() -> App<'static> {
         .takes_value(true)
         .setting(UseValueDelimiter)
         .setting(AllowEmptyValues)
-        .about("comma separated list of genres to set")
-        .group("md")
-        .required_unless_present("md");
+        .about("comma separated list of genres to set");
 
     let category = Arg::new("category")
         .takes_value(true)
         .setting(UseValueDelimiter)
         .setting(AllowEmptyValues)
-        .group("md")
-        .required_unless_present("md")
         .about("comma separated list of categories to set")
         .long("category")
         .short('c');
@@ -99,16 +89,12 @@ fn app_set() -> App<'static> {
         .long("description")
         .short('d')
         .alias("desc")
-        .group("md")
-        .required_unless_present("md")
         .takes_value(true);
 
     let media_type = Arg::new("type")
         .long("type")
         .about("media tpye of the file")
         .takes_value(true)
-        .group("md")
-        .required_unless_present("md")
         .setting(IgnoreCase)
         .possible_values(MEDIA_TYPES);
 
@@ -116,6 +102,16 @@ fn app_set() -> App<'static> {
         .multiple(true)
         .required(true)
         .about("the file to set the metadata of");
+
+    let md = ArgGroup::new("md").multiple(true).required(true).args(&[
+        "title",
+        "artist",
+        "album",
+        "genre",
+        "category",
+        "description",
+        "type",
+    ]);
 
     app.arg(artist)
         .arg(album)
@@ -125,6 +121,7 @@ fn app_set() -> App<'static> {
         .arg(media_type)
         .arg(description)
         .arg(file)
+        .group(md)
 }
 
 fn app_get() -> App<'static> {
