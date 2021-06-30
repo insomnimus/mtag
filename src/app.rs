@@ -1,6 +1,6 @@
 use clap::{
     crate_version, App, AppSettings, Arg,
-    ArgSettings::{AllowEmptyValues, UseValueDelimiter},
+    ArgSettings::{AllowEmptyValues, IgnoreCase, UseValueDelimiter},
 };
 
 pub fn new() -> App<'static> {
@@ -87,7 +87,7 @@ fn app_set() -> App<'static> {
     let category = Arg::new("category")
         .takes_value(true)
         .setting(UseValueDelimiter)
-        .Setting(AllowEmptyValues)
+        .setting(AllowEmptyValues)
         .group("md")
         .required_unless_present("md")
         .about("comma separated list of categories to set")
