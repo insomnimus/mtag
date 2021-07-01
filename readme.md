@@ -10,7 +10,7 @@ Any format that uses mpeg-4 would work, but i tested it with m4b and m4a files a
 
 This tool is written in rust, so get a rust toolchain on your system and you're good.
 
-mtag I haven't released mtag to crates.io yet, so for now you have two options:
+I haven't released mtag to crates.io yet, so for now you have two options:
 
 ## Install After Git Clone
 
