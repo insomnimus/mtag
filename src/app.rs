@@ -53,7 +53,7 @@ fn app_set() -> App<'static> {
 
     let title = Arg::new("title")
         .long("title")
-        .short_alias('t')
+        .short('t')
         .alias("tit")
         .visible_alias("ttl")
         .takes_value(true)
@@ -93,6 +93,7 @@ fn app_set() -> App<'static> {
 
     let media_type = Arg::new("type")
         .long("type")
+		.short('T')
         .about("media tpye of the file")
         .takes_value(true)
         .setting(IgnoreCase)
