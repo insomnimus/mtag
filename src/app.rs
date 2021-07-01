@@ -130,7 +130,7 @@ fn app_get() -> App<'static> {
     App::new("get")
         .visible_alias("g")
         .alias("show")
-        .about("Show metadata for a file")
+        .about("Show metadata for a file.")
         .arg(
             Arg::new("file")
                 .required(true)
