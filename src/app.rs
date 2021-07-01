@@ -41,7 +41,8 @@ fn app_set() -> App<'static> {
 
     let app = App::new("set")
         .visible_alias("s")
-        .about("Set media metadata.");
+        .about("Set media metadata.")
+		.after_long_help("To clear a particular key, you can pass empty values to any argument, for example `--genre=''`");
 
     let artist = Arg::new("artist")
         .long("artist")
