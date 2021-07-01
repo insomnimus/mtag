@@ -159,7 +159,7 @@ impl SetCmd {
                 tag.remove_custom_genres();
                 for gen in g {
                     tag.add_custom_genre(gen);
-                    tag.add_genre(gen);
+                    // tag.add_genre(gen);
                 }
             }
 
