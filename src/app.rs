@@ -6,7 +6,7 @@ use clap::{
 pub fn new() -> App<'static> {
     App::new("mtag")
         .version(crate_version!())
-        .about("Edit mp4 metadata.")
+        .about("Edit mpeg-4 metadata.")
         .setting(AppSettings::SubcommandRequired)
         .global_setting(AppSettings::VersionlessSubcommands)
         .global_setting(AppSettings::UnifiedHelpMessage)
