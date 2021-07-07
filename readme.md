@@ -22,7 +22,9 @@ You have two options:
 
 ## Install After Git Clone
 
-With this method, you'll also have auto generated shell completions after you build the crate.
+With this method, you'll also have auto generated shell completions after you build the crate. 
+The generated shell completions will be in the `target` directory 
+but it may also be generated in `$CARGO_TARGET_DIR` if you manually set it.
 
 ```sh
 git clone https://github.com/insomnimus/mtag
