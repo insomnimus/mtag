@@ -21,6 +21,12 @@ fn app_clear() -> App<'static> {
         .aliases(&["clean", "purge"])
         .about("Clear all metadata.")
         .arg(
+            Arg::new("artwork")
+                .long("artwork")
+                .visible_alias("art")
+                .about("Clear media artwork as well."),
+        )
+        .arg(
             Arg::new("file")
                 .multiple(true)
                 .about("file to clear the metadata of")
@@ -40,13 +46,12 @@ fn app_set() -> App<'static> {
     ];
 
     let app = App::new("set")
-        .visible_alias("s")
-        .about("Set media metadata.")
+		.visible_alias("s")
+		.about("Set media metadata.")
 		.after_long_help("To clear a particular key, you can pass empty values to any argument, for example `--genre=''`");
 
     let artist = Arg::new("artist")
         .long("artist")
-        .visible_alias("art")
         .takes_value(true)
         .setting(UseValueDelimiter)
         .setting(AllowEmptyValues)
@@ -94,8 +99,8 @@ fn app_set() -> App<'static> {
 
     let media_type = Arg::new("type")
         .long("type")
-		.short('T')
-        .about("media tpye of the file")
+        .short('T')
+        .about("media type of the file")
         .takes_value(true)
         .setting(IgnoreCase)
         .possible_values(MEDIA_TYPES);
@@ -105,6 +110,13 @@ fn app_set() -> App<'static> {
         .required(true)
         .about("the file to set the metadata of");
 
+    let art = Arg::new("artwork")
+        .long("artwork")
+        .visible_alias("art")
+        .about("A jpeg, bmp or a png file.")
+        .takes_value(true)
+        .setting(AllowEmptyValues);
+
     let md = ArgGroup::new("md").multiple(true).required(true).args(&[
         "title",
         "artist",
@@ -113,6 +125,7 @@ fn app_set() -> App<'static> {
         "category",
         "description",
         "type",
+        "artwork",
     ]);
 
     app.arg(artist)
@@ -123,6 +136,7 @@ fn app_set() -> App<'static> {
         .arg(media_type)
         .arg(description)
         .arg(file)
+        .arg(art)
         .group(md)
 }
 

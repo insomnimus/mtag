@@ -1,15 +1,18 @@
 use crate::app;
 use clap::ArgMatches;
-use mp4ameta::{Error, MediaType, Tag};
+use mp4ameta::{Error, Img, ImgFmt, MediaType, Tag};
+use std::{fs, path::Path};
 
 struct ClearCmd {
     files: Vec<String>,
+    clear_artwork: bool,
 }
 
 impl ClearCmd {
     fn from_matches(m: &ArgMatches) -> Self {
         Self {
             files: m.values_of("file").unwrap().map(String::from).collect(),
+            clear_artwork: m.is_present("artwork"),
         }
     }
 
@@ -18,6 +21,9 @@ impl ClearCmd {
             let mut tag = Tag::read_from_path(f)?;
             println!("clearing metadata from {}", f);
 
+            if self.clear_artwork {
+                tag.remove_artworks();
+            }
             tag.remove_artists();
             tag.remove_genres();
             tag.remove_track();
@@ -87,12 +93,14 @@ struct SetCmd {
     categories: Option<Vec<String>>,
     media_type: Option<MediaType>,
     description: Option<String>,
+    artwork: Option<String>,
 }
 
 impl SetCmd {
     fn from_matches(m: &ArgMatches) -> Self {
         let files: Vec<_> = m.values_of("file").unwrap().map(String::from).collect();
 
+        let artwork = m.value_of("artwork").map(String::from);
         let title = m.value_of("title").map(String::from);
         let artists = m
             .values_of("artist")
@@ -120,6 +128,7 @@ impl SetCmd {
             categories,
             description,
             media_type,
+            artwork,
         }
     }
 
@@ -127,6 +136,18 @@ impl SetCmd {
         for f in &self.files {
             let mut tag = Tag::read_from_path(f)?;
             println!("tagging {}", f);
+
+            if let Some(i) = self.artwork.as_ref() {
+                if i.is_empty() {
+                    tag.remove_artworks();
+                } else {
+                    // this is acceptable in a loop
+                    // because 99% of the time, there's only 1 file
+                    let img = read_img(i)?;
+                    tag.set_artwork(img);
+                }
+            }
+
             if let Some(t) = self.title.as_ref() {
                 if t.is_empty() {
                     tag.remove_title();
@@ -214,4 +235,29 @@ pub fn run() -> Result<(), Error> {
         "clear" => ClearCmd::from_matches(cmd_matches).run(),
         _ => unreachable!(),
     }
+}
+
+fn read_img(p: impl AsRef<Path>) -> Result<Img<Vec<u8>>, Error> {
+    let ext = p
+        .as_ref()
+        .extension()
+        .map(|s| {
+            s.to_str()
+                .map(str::to_lowercase)
+                .unwrap_or_else(String::new)
+        })
+        .unwrap_or_default();
+
+    let fmt = match &ext[..] {
+        "png" => ImgFmt::Png,
+        "jpeg" => ImgFmt::Jpeg,
+        "bmp" => ImgFmt::Bmp,
+        _ => {
+            eprintln!("{}: invalid image format", p.as_ref().display());
+            std::process::exit(2);
+        }
+    };
+
+    let data = fs::read(p.as_ref())?;
+    Ok(Img { fmt, data })
 }
