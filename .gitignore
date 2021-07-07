@@ -1,1 +1,9 @@
 /target
+*.bash
+_*
+*.sh
+*.ps1
+*.elv
+*.fish
+*.zsh
+mtag*
