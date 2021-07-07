@@ -9,7 +9,7 @@ const BIN_NAME: &str = "mtag";
 fn main() {
     let mut app = new();
     app.set_bin_name(BIN_NAME);
-    let outdir = env!("CARGO_TARGET_DIR");
+    let outdir = env!("OUT_DIR");
     generate_to::<Bash, _, _>(&mut app, BIN_NAME, outdir);
     generate_to::<Elvish, _, _>(&mut app, BIN_NAME, outdir);
     generate_to::<Fish, _, _>(&mut app, BIN_NAME, outdir);
