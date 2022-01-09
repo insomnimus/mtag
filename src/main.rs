@@ -1,9 +1,13 @@
-use mtag::cmd;
-use std::process;
+mod app;
+mod cmd;
+mod set;
 
 fn main() {
-    if let Err(e) = cmd::run() {
-        eprintln!("error: {}", &e);
-        process::exit(1);
-    }
+	std::process::exit(match cmd::run() {
+		Err(e) => {
+			eprintln!("error: {}", e);
+			1
+		}
+		Ok(code) => code,
+	});
 }

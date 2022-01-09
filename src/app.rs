@@ -1,154 +1,149 @@
 use clap::{
-    crate_version, App, AppSettings, Arg, ArgGroup,
-    ArgSettings::{AllowEmptyValues, IgnoreCase, UseValueDelimiter},
+	arg,
+	crate_version,
+	App,
+	AppSettings,
+	Arg,
+	ArgGroup,
+	ValueHint,
 };
 
 pub fn new() -> App<'static> {
-    App::new("mtag")
-        .version(crate_version!())
-        .about("Edit mpeg-4 metadata.")
-        .setting(AppSettings::SubcommandRequired)
-        .global_setting(AppSettings::VersionlessSubcommands)
-        .global_setting(AppSettings::UnifiedHelpMessage)
-        .subcommand(app_clear())
-        .subcommand(app_set())
-        .subcommand(app_get())
-}
-
-fn app_clear() -> App<'static> {
-    App::new("clear")
-        .visible_alias("c")
-        .aliases(&["clean", "purge"])
-        .about("Clear all metadata.")
-        .arg(
-            Arg::new("artwork")
-                .long("artwork")
-                .visible_alias("art")
-                .about("Clear media artwork as well."),
-        )
-        .arg(
-            Arg::new("file")
-                .multiple(true)
-                .about("file to clear the metadata of")
-                .required(true),
-        )
-}
-
-fn app_set() -> App<'static> {
-    const MEDIA_TYPES: &[&str] = &[
-        "movie",
-        "normal",
-        "audiobook",
-        "music-video",
-        "short-film",
-        "tv-show",
-        "booklet",
-    ];
-
-    let app = App::new("set")
-		.visible_alias("s")
-		.about("Set media metadata.")
-		.after_long_help("To clear a particular key, you can pass empty values to any argument, for example `--genre=''`");
-
-    let artist = Arg::new("artist")
-        .long("artist")
-        .takes_value(true)
-        .setting(UseValueDelimiter)
-        .setting(AllowEmptyValues)
-        .about("comma separated list of artists to set");
-
-    let title = Arg::new("title")
-        .long("title")
-        .short('t')
-        .alias("tit")
-        .visible_alias("ttl")
-        .takes_value(true)
-        .setting(AllowEmptyValues)
-        .about("set the title metadata");
-
-    let album = Arg::new("album")
-        .long("album")
-        .visible_alias("alb")
-        .takes_value(true)
-        .setting(AllowEmptyValues)
-        .about("set the album metadata");
-
-    let genre = Arg::new("genre")
-        .long("genre")
-        .visible_alias("gen")
-        .short_alias('g')
-        .takes_value(true)
-        .setting(UseValueDelimiter)
-        .setting(AllowEmptyValues)
-        .about("comma separated list of genres to set");
-
-    let category = Arg::new("category")
-        .takes_value(true)
-        .setting(UseValueDelimiter)
-        .setting(AllowEmptyValues)
-        .about("comma separated list of categories to set")
-        .long("category")
-        .short('c');
-
-    let description = Arg::new("description")
-        .about("description of the file")
-        .long("description")
-        .short('d')
-        .alias("desc")
-        .takes_value(true);
-
-    let media_type = Arg::new("type")
-        .long("type")
-        .short('T')
-        .about("media type of the file")
-        .takes_value(true)
-        .setting(IgnoreCase)
-        .possible_values(MEDIA_TYPES);
-
-    let file = Arg::new("file")
-        .multiple(true)
-        .required(true)
-        .about("the file to set the metadata of");
-
-    let art = Arg::new("artwork")
-        .long("artwork")
-        .visible_alias("art")
-        .about("A jpeg, bmp or a png file.")
-        .takes_value(true)
-        .setting(AllowEmptyValues);
-
-    let md = ArgGroup::new("md").multiple(true).required(true).args(&[
-        "title",
-        "artist",
-        "album",
-        "genre",
-        "category",
-        "description",
-        "type",
-        "artwork",
-    ]);
-
-    app.arg(artist)
-        .arg(album)
-        .arg(title)
-        .arg(genre)
-        .arg(category)
-        .arg(media_type)
-        .arg(description)
-        .arg(file)
-        .arg(art)
-        .group(md)
+	App::new("mtag")
+		.version(crate_version!())
+		.about("Edit mpeg-4 metadata.")
+		.global_setting(AppSettings::AllArgsOverrideSelf)
+		.global_setting(AppSettings::InferLongArgs)
+		.setting(AppSettings::InferSubcommands)
+		.setting(AppSettings::UseLongFormatForHelpSubcommand)
+		.setting(AppSettings::SubcommandRequiredElseHelp)
+		.subcommands([app_clear(), app_get(), app_set()])
 }
 
 fn app_get() -> App<'static> {
-    App::new("get")
-        .visible_alias("g")
-        .alias("show")
-        .about("Show metadata for a file.")
-        .arg(
-            Arg::new("file")
-                .required(true)
-                .multiple(true)
-                .about("file to read the metadata of"),
-        )
+	App::new("get").about("Display metadata of a file.").arg(
+		Arg::new("file")
+			.help("One or more media files.")
+			.required(true)
+			.value_name("FILE")
+			.multiple_values(true)
+			.value_hint(ValueHint::FilePath),
+	)
+}
+
+fn app_set() -> App<'static> {
+	const MEDIA_TYPES: &[&str] = &[
+		"movie",
+		"normal",
+		"audiobook",
+		"music-video",
+		"short-film",
+		"tv-show",
+		"booklet",
+		"",
+	];
+
+	macro_rules! args {
+			($($x:expr),* $(,)?) => {
+				&[
+				$($x.default_missing_value("").group("keys")),*
+				]
+			};
+		}
+	macro_rules! args_many {
+			($($x:expr),* $(,)?) => {
+				&[
+				$($x
+				.default_missing_values(&[])
+				.use_delimiter(true)
+				.require_delimiter(true)
+				.multiple_values(true)
+				.group("keys")),*
+				]
+			};
+		}
+
+	App::new("set")
+		.about("Set mpeg-4 metadata.")
+		.after_help("to clear a specific key, leave out the value or set it to an empty string.")
+		.group(ArgGroup::new("keys").multiple(true).required(true))
+		.args(args_many![
+			Arg::new("artist")
+				.help("Comma separated list of artists.")
+				.long("artist")
+				.takes_value(true),
+			Arg::new("genre")
+				.help("Comma separated list of genres.")
+				.takes_value(true)
+				.long("genre"),
+			Arg::new("category")
+				.help("Comma separated list of categories.")
+				.takes_value(true),
+		])
+		.args(args![
+	arg!(--title [TITLE] "The title."),
+	arg!(--album [ALBUM] "The album name."),
+	arg!(--description [DESCRIPTION] "The description."),
+	arg!(--type [TYPE] "The media type.")
+	.possible_values(MEDIA_TYPES),
+	arg!(--artwork [PATH] "Path to an image file (jpeg, bmp or png) to be used as the artwork.")
+	.visible_alias("cover")
+	.value_hint(ValueHint::FilePath),
+	arg!(--bpm [BPM] "Beats per minute.").validator(validate_u16),
+	arg!(--track [TRACK] "The track number in the form N/TOTAL.").validator(validate_track),
+	arg!(--disc [DISC] "The disc number in the form N/TOTAL.").validator(validate_track),
+	arg!(--copyright [COPYRIGHT] "The copyright information."),
+	arg!(--isrc "The ISRC code."),
+	arg!(--show [NAME] "The TV show name."),
+	arg!(--work [WORK] "The name of the work."),
+	arg!(--year [YEAR] "The year."),
+	])
+		.arg(
+			Arg::new("file")
+				.help("Path to a media file.")
+				.required(true)
+				.value_name("FILE")
+				.multiple_values(true)
+				.value_hint(ValueHint::FilePath),
+		)
+}
+
+fn app_clear() -> App<'static> {
+	App::new("clear").about("Clear metadata from files.").arg(
+		Arg::new("file")
+			.help("One or more media files.")
+			.required(true)
+			.multiple_values(true)
+			.value_name("FILE")
+			.value_hint(ValueHint::FilePath),
+	)
+}
+
+fn validate_u16(s: &str) -> Result<(), String> {
+	if s.is_empty() {
+		return Ok(());
+	}
+	s.parse::<u16>()
+		.map(|_| {})
+		.map_err(|_| String::from("the value must be a positive integer or 0"))
+}
+
+fn validate_track(s: &str) -> Result<(), String> {
+	if s.is_empty() {
+		return Ok(());
+	}
+	let (left, right) = s
+		.split_once('/')
+		.ok_or_else(|| String::from("the correct syntax is N/TOTAL"))?;
+	let left = left
+		.parse::<u16>()
+		.map_err(|_| String::from("the correct syntax is N/TOTAL"))?;
+	let right = right
+		.parse::<u16>()
+		.map_err(|_| String::from("the correct syntax is N/TOTAL"))?;
+	if left > right {
+		Err(String::from("N/TOTAL: N can't be larger than TOTAL"))
+	} else {
+		Ok(())
+	}
 }
