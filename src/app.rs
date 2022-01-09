@@ -78,6 +78,7 @@ fn app_set() -> App<'static> {
 				.long("genre"),
 			Arg::new("category")
 				.help("Comma separated list of categories.")
+				.long("category")
 				.takes_value(true),
 		])
 		.args(args![
